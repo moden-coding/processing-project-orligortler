@@ -13,13 +13,13 @@ public class App extends PApplet {
   int carY2 = 500;
   int car2 = 2;
 
-  int b = 0;
+  int b = 600;
   int carY3 = 350;
   int car3 = -2;
 
   int x = 300;
   int y = 50;
-  int speed = 9;
+  int speed = 13;
   boolean isDead = false;
   int lives = 3;
   int level = 1;
@@ -69,6 +69,11 @@ public class App extends PApplet {
   }
 
   public void keyPressed() {
+
+    if(key == 'l'){
+      level++;
+    }
+  
     if (keyCode == LEFT) {
       x -= speed;
     } else if (keyCode == RIGHT) {
@@ -159,27 +164,34 @@ public class App extends PApplet {
 
   public void gotToBottom() {
     if (y > 600) {
-      lives += 1;
+      if (lives < 5) {
+        lives += 1;
+      }
       x = 300;
       y = 50;
-      car += 1.5;
-      car2 += 1.5;
+      car += 2;
+      car2 += 2;
       level += 1;
-      car3 += 1;
+      if (level == 6) {
+        restart();
+      }
+      if (lives > 5) {
+        car3 -= 2;
+      }
+      
     }
 
   }
 
   public void nextPartOfGame() {
-    restart();
 
     fill(200, 200);
     rect(b, carY3, 140, 70);
     b += car3;
-    if (b > width) {
-      b = -5;
+    if (b <= 0) {
+      b = 605;
     }
-    if (isHitByCar(x, y, v, carY3)) {
+    if (isHitByCar(x, y, b, carY3)) {
       hitByCar();
 
     }
