@@ -7,73 +7,120 @@ public class App extends PApplet {
 
   int u = 0;
   int carY1 = 200;
-  int car = 3;
+  int carspeed = 4;
 
   int v = 0;
-  int carY2 = 500;
-  int car2 = 2;
+  int carY2 = 600;
+  int carspeed2 = 3;
 
-  int b = 600;
-  int carY3 = 350;
-  int car3 = -2;
+  int b = 800;
+  int carY3 = 400;
+  int carspeed3 = -3;
 
-  int x = 300;
+  int x = 400;
   int y = 50;
   int speed = 13;
   boolean isDead = false;
   int lives = 3;
   int level = 1;
+  int highscore = 0;
+
+  int gameState = 0; // 0 = start screen, 1 = playing
+  int buttonX = 300, buttonY = 400, buttonW = 200, buttonH = 80; // Button dimensions
 
   public void setup() {
     background(152, 251, 152);
   }
 
   public void settings() {
-    size(600, 600);
+    size(800, 800);
   }
 
   public void restart() {
-    x = 300;
+    x = 400;
     y = 50;
-    car = 3;
-    car2 = 2;
+    carspeed = 4; // Reset car 1 speed
+    carspeed2 = 3; // Reset car 2 speed
+    carspeed3 = -3; // Reset car 3 speed
   }
 
   public void draw() {
-    if (isDead) {
-      println("You died ");
-      fill(255, 0, 0);
-      textSize(52);
-      text("You Died", width / 2 - 80, height / 2);
-      textSize(40);
-      text("press enter to restart", width / 2 - 160, height / 2 + 80);
-      restart();
-      level = 1;
-    } else {
-      gamePlaying();
-      println("Level" + level);
-      fill(255, 0, 0);
+    if (gameState == 0) {
+      // Start screen
+      background(255, 182, 193); // baby pink background
+      textAlign(CENTER);
+      fill(20);
       textSize(30);
-      text("Level " + level, width - 120, 40);
+      text("Get to the bottom and dont get hit by the moveing blocks!", width / 2, 200);
+
+      if (highscore > 0) {
+        fill(20);
+        textSize(40);
+        text("Highscore: " + highscore, width / 2, 600);
+      }
+
+      // Border on start button
+      stroke(204, 0, 102); // Magenta border color
+      strokeWeight(9); // Border thickness
+      rect(buttonX, buttonY, buttonW, buttonH);
+
+      // Draw the start button
+      noStroke();
+      fill(255, 105, 180);
+      rect(buttonX, buttonY, buttonW, buttonH); // Draw button
+      fill(255);
+      textSize(42);
+      text("Start Game", buttonX + buttonW / 2, buttonY + buttonH / 2 + 10); // Button name
+
+      // when dead instructions
+    } else if (gameState == 1) {
+      if (isDead) {
+        println("You died ");
+        fill(255, 0, 0);
+        textSize(52);
+        text("You Died", width / 2, height / 2);
+        textSize(40);
+        text("press enter to restart", width / 2, height / 2 + 80);
+        if (level >= highscore) {
+          highscore = level; // Update the highscore
+          textSize(32);
+          text("Your new highscore is: " + highscore, width / 2, height / 2 + 130);
+        } else {
+          textSize(32);
+          text("So close to a new highscore! ", width / 2, height / 2 + 130);
+        }
+        
+        restart();
+      } else {
+        gamePlaying();
+        // println("Level" + level);
+        fill(255, 0, 0);
+        textSize(30);
+        text("Level " + level, width - 120, 40);
+      }
+      drawHearts();
     }
-    drawHearts();
   }
 
   public void hitByCar() {
     lives -= 1;
-    x = 300;
+    x = 400;
     y = 50;
     if (lives == 0) {
       isDead = true;
     }
   }
 
+  // cheat coades for testing
   public void keyPressed() {
 
-    if(key == 'l'){
+    if (key == 'l') {
       level++;
+      carspeed += 2;
+      carspeed2 += 2;
+      carspeed3 -= 2;
     }
-  
+
     if (keyCode == LEFT) {
       x -= speed;
     } else if (keyCode == RIGHT) {
@@ -85,22 +132,24 @@ public class App extends PApplet {
     } else if (keyCode == ENTER) {
       isDead = false;
       lives = 3;
+      gameState = 0;
     }
   }
 
+  // how the boxes work
   public void gamePlaying() {
     background(152, 251, 152);
 
     fill(200, 200);
     rect(u, carY1, 140, 70);
-    u += car;
+    u += carspeed;
     if (u > width) {
       u = -5;
     }
 
     fill(200, 200);
     rect(v, carY2, 140, 70);
-    v += car2;
+    v += carspeed2;
     if (v > width) {
       v = -5;
     }
@@ -108,14 +157,20 @@ public class App extends PApplet {
     fill(255, 255, 0);
     ellipse(x, y, 50, 50);
 
-    processCars();
-    gotToBottom();
+    processCars(); // to see if the circle gets hit
+    gotToBottom(); // if you beat the level
 
+    if (level == 6) {
+      carspeed = 4; // Reset car 1 speed
+      carspeed2 = 3; // Reset car 2 speed
+      carspeed3 = -3; // Reset car 3 speed
+    }
     if (level > 5) {
       nextPartOfGame();
     }
   }
 
+  // mesure the distance between car and points on square
   public boolean isHitByCar(int circX, int circY, int carX, int carY) {
     float distanceTopLeft = dist(circX, circY, carX, carY);
     float distanceTopRight = dist(circX, circY, carX + 140, carY);
@@ -143,6 +198,7 @@ public class App extends PApplet {
 
   }
 
+  // adding hearts and lives
   public void drawHearts() {
     int xHeartPlacmet = 100;
     for (int i = 0; i < lives; i++) {
@@ -163,37 +219,46 @@ public class App extends PApplet {
   }
 
   public void gotToBottom() {
-    if (y > 600) {
+    if (y > 800) {
       if (lives < 5) {
         lives += 1;
       }
-      x = 300;
+      x = 400;
       y = 50;
-      car += 2;
-      car2 += 2;
+      carspeed += 2;
+      carspeed2 += 2;
       level += 1;
       if (level == 6) {
         restart();
       }
-      if (lives > 5) {
-        car3 -= 2;
+      if (level > 5) {
+        carspeed3 -= 2;
       }
-      
+      if (level > highscore) {
+        highscore = level;
+      }
     }
-
   }
 
   public void nextPartOfGame() {
-
-    fill(200, 200);
+    fill(200, 200); //adding a new car
     rect(b, carY3, 140, 70);
-    b += car3;
+    b += carspeed3;
     if (b <= 0) {
-      b = 605;
+      b = 805;
     }
     if (isHitByCar(x, y, b, carY3)) {
       hitByCar();
+    }
+  }
 
+  public void mousePressed() {
+    if (gameState == 0) {
+      // Check if the mouse is over the play button
+      if (mouseX > buttonX && mouseX < buttonX + buttonW && mouseY > buttonY && mouseY < buttonY + buttonH) {
+        gameState = 1;
+        level = 1; // Start the game
+      }
     }
   }
 }
